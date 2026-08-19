@@ -43,9 +43,11 @@ if (wrap && canvas && couponGrid && reformBtn) {
     ctx.fill();
   }
 
-  // Draws text arced along a circle, centered on the top of the arc, so it
-  // reads upright like a coin's rim legend (e.g. "HAPPY BIRTHDAY BUBBY").
-  function drawArcText(ctx, text, cx, cy, radius, font, color) {
+  // Draws text arced along a circle, either along the top of the arc or the
+  // bottom, so it reads upright and left-to-right like a coin's engraved
+  // legend (e.g. "HAPPY BIRTHDAY BUBBY" up top, "COUPON BOOK" along the
+  // bottom).
+  function drawArcText(ctx, text, cx, cy, radius, font, color, position = "top") {
     ctx.save();
     ctx.font = font;
     ctx.fillStyle = color;
@@ -56,22 +58,25 @@ if (wrap && canvas && couponGrid && reformBtn) {
     const widths = chars.map((ch) => ctx.measureText(ch).width);
     const totalAngle = widths.reduce((a, w) => a + w, 0) / radius;
 
-    let angle = -Math.PI / 2 - totalAngle / 2;
+    const dir = position === "top" ? 1 : -1;
+    const baseAngle = position === "top" ? -Math.PI / 2 : Math.PI / 2;
+    const rotationOffset = position === "top" ? Math.PI / 2 : -Math.PI / 2;
+    let angle = baseAngle - (dir * totalAngle) / 2;
 
     chars.forEach((ch, i) => {
       const chAngle = widths[i] / radius;
-      angle += chAngle / 2;
+      angle += (dir * chAngle) / 2;
 
       const x = cx + radius * Math.cos(angle);
       const y = cy + radius * Math.sin(angle);
 
       ctx.save();
       ctx.translate(x, y);
-      ctx.rotate(angle + Math.PI / 2);
+      ctx.rotate(angle + rotationOffset);
       ctx.fillText(ch, 0, 0);
       ctx.restore();
 
-      angle += chAngle / 2;
+      angle += (dir * chAngle) / 2;
     });
 
     ctx.restore();
@@ -109,8 +114,29 @@ if (wrap && canvas && couponGrid && reformBtn) {
       size / 2,
       size * 0.4,
       "700 22px Georgia, 'Times New Roman', serif",
-      "rgba(110, 68, 24, 0.6)"
+      "rgba(110, 68, 24, 0.6)",
+      "top"
     );
+
+    // matching legend along the bottom inner edge
+    drawArcText(
+      ctx,
+      "★ COUPON BOOK ★",
+      size / 2,
+      size / 2,
+      size * 0.4,
+      "700 22px Georgia, 'Times New Roman', serif",
+      "rgba(110, 68, 24, 0.6)",
+      "bottom"
+    );
+
+    // inner circle -- separates the rim inscriptions from the central
+    // emblem, like the divider ring on a real coin.
+    ctx.strokeStyle = "rgba(122, 74, 35, 0.4)";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, size * 0.34, 0, Math.PI * 2);
+    ctx.stroke();
 
     // monochrome gold/bronze palette -- everything below reads as one
     // embossed metal relief rather than a colorful illustration.
@@ -124,6 +150,9 @@ if (wrap && canvas && couponGrid && reformBtn) {
 
     ctx.save();
     ctx.translate(size / 2, size / 2 + 50);
+    // Scaled down so the whole emblem sits comfortably inside the inner
+    // divider circle, clear of the rim inscriptions.
+    ctx.scale(0.74, 0.74);
 
     // plate shadow (soft, sits under everything)
     ctx.fillStyle = "rgba(60, 40, 0, 0.28)";
@@ -216,8 +245,16 @@ if (wrap && canvas && couponGrid && reformBtn) {
   }
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
-  camera.position.set(0, 0.55, 5.4);
+  // Orthographic camera, dead-on with no vertical offset: a perspective
+  // camera (especially one positioned above and looking down) makes a
+  // spinning flat disc keystone/shear as it turns, which reads as the coin
+  // "leaning sideways" instead of tumbling cleanly. Orthographic projection
+  // keeps every vertical line on the coin perfectly vertical no matter the
+  // spin angle -- only the horizontal width squashes, which is exactly the
+  // coin-flip look we want.
+  const FRUSTUM = 1.9;
+  const camera = new THREE.OrthographicCamera(-FRUSTUM, FRUSTUM, FRUSTUM, -FRUSTUM, 0.1, 100);
+  camera.position.set(0, 0, 5.4);
   camera.lookAt(0, 0, 0);
 
   scene.add(new THREE.AmbientLight(0xfff2d6, 0.7));
@@ -251,9 +288,8 @@ if (wrap && canvas && couponGrid && reformBtn) {
   // spinning it in-plane like a flat sticker.
   geometry.rotateX(Math.PI / 2);
   const coin = new THREE.Mesh(geometry, [sideMat, faceMat, faceMat]);
-  // Small fixed tilt purely for a nicer camera angle -- does not affect the
-  // tumbling motion, which comes entirely from rotation.y below.
-  coin.rotation.x = 0.14;
+  // No fixed tilt -- kept perfectly upright at rest. All motion comes from
+  // rotation.y below, so the cake/text never lean off-axis.
   scene.add(coin);
 
   // ---------- SIZING ----------
@@ -262,7 +298,8 @@ if (wrap && canvas && couponGrid && reformBtn) {
     if (!w) return;
     wrap.style.height = `${w}px`;
     renderer.setSize(w, w, false);
-    camera.aspect = 1;
+    // The wrap is always square, so the orthographic frustum (set once,
+    // square) never needs to be recomputed on resize.
     camera.updateProjectionMatrix();
   }
   resize();

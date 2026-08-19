@@ -43,7 +43,7 @@ const COUPONS = [
 ];
 
 // ---------- COUNTDOWN ----------
-function computeDaysUntilNextBirthday() {
+function getNextBirthday() {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -55,13 +55,33 @@ function computeDaysUntilNextBirthday() {
     target = new Date(now.getFullYear() + 1, BIRTHDAY_MONTH - 1, BIRTHDAY_DAY);
   }
 
-  const msPerDay = 1000 * 60 * 60 * 24;
-  return Math.round((target - today) / msPerDay);
+  return target;
 }
 
 function renderCountdown() {
-  const el = document.getElementById("countdown-days");
-  if (el) el.textContent = computeDaysUntilNextBirthday();
+  const daysEl = document.getElementById("countdown-days");
+  const hoursEl = document.getElementById("countdown-hours");
+  const minutesEl = document.getElementById("countdown-minutes");
+  const secondsEl = document.getElementById("countdown-seconds");
+  if (!daysEl || !hoursEl || !minutesEl || !secondsEl) return;
+
+  const target = getNextBirthday();
+  const diff = Math.max(0, target.getTime() - Date.now());
+
+  const msPerSecond = 1000;
+  const msPerMinute = msPerSecond * 60;
+  const msPerHour = msPerMinute * 60;
+  const msPerDay = msPerHour * 24;
+
+  const days = Math.floor(diff / msPerDay);
+  const hours = Math.floor((diff % msPerDay) / msPerHour);
+  const minutes = Math.floor((diff % msPerHour) / msPerMinute);
+  const seconds = Math.floor((diff % msPerMinute) / msPerSecond);
+
+  daysEl.textContent = days;
+  hoursEl.textContent = String(hours).padStart(2, "0");
+  minutesEl.textContent = String(minutes).padStart(2, "0");
+  secondsEl.textContent = String(seconds).padStart(2, "0");
 }
 
 // ---------- COUPONS ----------
@@ -222,6 +242,7 @@ function animateConfetti() {
 // ---------- INIT ----------
 document.addEventListener("DOMContentLoaded", () => {
   renderCountdown();
+  setInterval(renderCountdown, 1000);
   renderCoupons();
 
   // Fires every time he visits the page, as requested.

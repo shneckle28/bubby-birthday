@@ -199,7 +199,7 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-const CONFETTI_COLORS = ["#ff5da8", "#a855f7", "#7c3aed", "#34d399", "#ffd166", "#f5f5f7"];
+const CONFETTI_COLORS = ["#ffd76a", "#d4a017", "#f5c542", "#b8860b", "#fff4d6", "#8a6712"];
 
 function fireConfetti(count = 160) {
   const newParticles = Array.from({ length: count }, () => ({
@@ -268,10 +268,10 @@ document.addEventListener("DOMContentLoaded", () => {
   initSpecialCard();
 
   // Fires every time he visits the page, as requested.
-  fireConfetti(220);
+  fireConfetti(500);
 
   const moreBtn = document.getElementById("more-confetti-btn");
   if (moreBtn) {
-    moreBtn.addEventListener("click", () => fireConfetti(180));
+    moreBtn.addEventListener("click", () => fireConfetti(400));
   }
 });

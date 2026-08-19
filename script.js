@@ -182,9 +182,25 @@ function initSpecialCard() {
   const card = document.getElementById("special-card");
   if (!card) return;
 
+  const back = card.querySelector(".special-card-back");
+  const message = card.querySelector(".special-card-message");
+
+  // Size the opened card to exactly fit the message instead of guessing a
+  // fixed height (which left a big empty gap under shorter renderings of
+  // the text, e.g. on wide viewports where fewer lines wrap).
+  function syncOpenHeight() {
+    if (!back || !message) return;
+    const style = getComputedStyle(back);
+    const paddingTop = parseFloat(style.paddingTop) || 0;
+    const paddingBottom = parseFloat(style.paddingBottom) || 0;
+    const needed = message.scrollHeight + paddingTop + paddingBottom;
+    card.style.setProperty("--open-height", `${needed}px`);
+  }
+
   const toggle = () => {
     const opened = card.classList.toggle("opened");
     card.setAttribute("aria-expanded", opened ? "true" : "false");
+    if (opened) syncOpenHeight();
   };
 
   card.addEventListener("click", toggle);
@@ -193,6 +209,10 @@ function initSpecialCard() {
       e.preventDefault();
       toggle();
     }
+  });
+
+  window.addEventListener("resize", () => {
+    if (card.classList.contains("opened")) syncOpenHeight();
   });
 }
 

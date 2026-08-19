@@ -52,6 +52,27 @@ html, body {
 #more-confetti-btn:hover { transform: scale(1.1) rotate(10deg); }
 #more-confetti-btn:active { transform: scale(0.95); }
 
+#music-toggle-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 1000;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(212, 160, 23, 0.45);
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+#music-toggle-btn:hover { transform: scale(1.1) rotate(-10deg); }
+#music-toggle-btn:active { transform: scale(0.95); }
+#music-toggle-btn[aria-pressed="true"] {
+  background: linear-gradient(135deg, var(--green), #1f9d75);
+}
+
 main {
   max-width: 900px;
   margin: 0 auto;

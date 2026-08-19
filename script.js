@@ -290,12 +290,114 @@ function animateConfetti() {
   }
 }
 
+// ---------- AMBIENT BIRTHDAY TUNE ----------
+// Synthesized live with the Web Audio API (no audio file to host) --
+// the "Happy Birthday to You" melody itself is public domain, only
+// specific recordings/arrangements were ever under copyright.
+function initBirthdayMusic() {
+  const toggleBtn = document.getElementById("music-toggle-btn");
+  if (!toggleBtn) return;
+  if (!(window.AudioContext || window.webkitAudioContext)) {
+    toggleBtn.style.display = "none";
+    return;
+  }
+
+  const NOTE_FREQ = {
+    C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.0,
+    A4: 440.0, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25,
+    F5: 698.46, G5: 783.99
+  };
+
+  // Durations are in beats (quarter note = 1 beat).
+  const MELODY = [
+    ["G4", 0.5], ["G4", 0.5], ["A4", 1], ["G4", 1], ["C5", 1], ["B4", 2],
+    ["G4", 0.5], ["G4", 0.5], ["A4", 1], ["G4", 1], ["D5", 1], ["C5", 2],
+    ["G4", 0.5], ["G4", 0.5], ["G5", 1], ["E5", 1], ["C5", 1], ["B4", 1], ["A4", 2],
+    ["F5", 0.5], ["F5", 0.5], ["E5", 1], ["C5", 1], ["D5", 1], ["C5", 2]
+  ];
+
+  const BEAT_SECONDS = 0.42;
+  const LOOP_GAP_SECONDS = 1.4;
+  const VOLUME = 0.06; // ambient, background level -- not a foreground jingle
+
+  let audioCtx = null;
+  let masterGain = null;
+  let playing = false;
+  let loopTimeoutId = null;
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = 0;
+      masterGain.connect(audioCtx.destination);
+    }
+    return audioCtx;
+  }
+
+  function playNote(freq, startTime, duration) {
+    const osc = audioCtx.createOscillator();
+    const noteGain = audioCtx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+
+    const attack = 0.02;
+    const release = Math.min(0.18, duration * 0.4);
+    noteGain.gain.setValueAtTime(0, startTime);
+    noteGain.gain.linearRampToValueAtTime(1, startTime + attack);
+    noteGain.gain.setValueAtTime(1, Math.max(startTime + attack, startTime + duration - release));
+    noteGain.gain.linearRampToValueAtTime(0, startTime + duration);
+
+    osc.connect(noteGain);
+    noteGain.connect(masterGain);
+    osc.start(startTime);
+    osc.stop(startTime + duration + 0.02);
+  }
+
+  function scheduleLoop() {
+    if (!playing) return;
+    const ctx = ensureAudio();
+    let t = ctx.currentTime + 0.05;
+    let total = 0;
+    MELODY.forEach(([note, beats]) => {
+      const duration = beats * BEAT_SECONDS;
+      playNote(NOTE_FREQ[note], t, duration * 0.92);
+      t += duration;
+      total += duration;
+    });
+    loopTimeoutId = setTimeout(scheduleLoop, (total + LOOP_GAP_SECONDS) * 1000);
+  }
+
+  function setPlaying(next) {
+    playing = next;
+    toggleBtn.setAttribute("aria-pressed", playing ? "true" : "false");
+    toggleBtn.textContent = playing ? "🔇" : "🎵";
+    toggleBtn.title = playing ? "Mute birthday tune" : "Play birthday tune";
+
+    const ctx = ensureAudio();
+    if (playing && ctx.state === "suspended") ctx.resume();
+
+    masterGain.gain.cancelScheduledValues(ctx.currentTime);
+    masterGain.gain.setValueAtTime(masterGain.gain.value, ctx.currentTime);
+    masterGain.gain.linearRampToValueAtTime(playing ? VOLUME : 0, ctx.currentTime + 0.3);
+
+    if (playing) {
+      scheduleLoop();
+    } else {
+      clearTimeout(loopTimeoutId);
+    }
+  }
+
+  toggleBtn.addEventListener("click", () => setPlaying(!playing));
+}
+
 // ---------- INIT ----------
 document.addEventListener("DOMContentLoaded", () => {
   renderCountdown();
   setInterval(renderCountdown, 1000);
   renderCoupons();
   initSpecialCard();
+  initBirthdayMusic();
 
   // Fires every time he visits the page, as requested.
   fireConfetti(500);

@@ -4,7 +4,7 @@ const BIRTHDAY_DAY = 19;
 const LOCK_DAYS = 365;
 
 const ICONS = {
-  dinner: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2v6M8 2v6M11 2v6M8 8v14"/><path d="M15 2h4v9a2 2 0 0 1-4 0V2Z"/><path d="M17 13v9"/></svg>`,
+  dinner: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/></svg>`,
   beach: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 16 0Z"/><path d="M12 12v8a2 2 0 0 1-4 0"/></svg>`,
   controller: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="10" rx="5"/><path d="M7 11v4M5 13h4"/><circle cx="16" cy="11.5" r="1"/><circle cx="18.5" cy="14" r="1"/></svg>`,
   pulse: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
@@ -199,7 +199,7 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-const CONFETTI_COLORS = ["#ffb703", "#fb8500", "#ff5d8f", "#4ade80", "#4cc9f0", "#f4f6ff"];
+const CONFETTI_COLORS = ["#ff5da8", "#a855f7", "#7c3aed", "#34d399", "#ffd166", "#f5f5f7"];
 
 function fireConfetti(count = 160) {
   const newParticles = Array.from({ length: count }, () => ({

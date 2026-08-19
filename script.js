@@ -1,7 +1,6 @@
 // ---------- CONFIG ----------
 const BIRTHDAY_MONTH = 8; // August (1-indexed for readability)
 const BIRTHDAY_DAY = 19;
-const LOCK_DAYS = 365;
 
 const ICONS = {
   dinner: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/></svg>`,
@@ -96,17 +95,28 @@ function getRedeemedAt(id) {
   return raw ? new Date(raw) : null;
 }
 
+// A coupon resets on the next Aug 19th strictly after the moment it was
+// redeemed -- so redeeming right before the birthday unlocks it again
+// almost immediately after, while redeeming right after locks it for
+// nearly a full year, same as a real birthday coupon book would work.
+function getCouponResetDate(redeemedAt) {
+  const year = redeemedAt.getFullYear();
+  let reset = new Date(year, BIRTHDAY_MONTH - 1, BIRTHDAY_DAY);
+  if (reset <= redeemedAt) {
+    reset = new Date(year + 1, BIRTHDAY_MONTH - 1, BIRTHDAY_DAY);
+  }
+  return reset;
+}
+
 function isLocked(redeemedAt) {
   if (!redeemedAt) return false;
-  const msPerDay = 1000 * 60 * 60 * 24;
-  const daysSince = (Date.now() - redeemedAt.getTime()) / msPerDay;
-  return daysSince < LOCK_DAYS;
+  return Date.now() < getCouponResetDate(redeemedAt).getTime();
 }
 
 function daysRemainingLocked(redeemedAt) {
   const msPerDay = 1000 * 60 * 60 * 24;
-  const daysSince = (Date.now() - redeemedAt.getTime()) / msPerDay;
-  return Math.max(0, Math.ceil(LOCK_DAYS - daysSince));
+  const msRemaining = getCouponResetDate(redeemedAt).getTime() - Date.now();
+  return Math.max(0, Math.ceil(msRemaining / msPerDay));
 }
 
 function redeemCoupon(id) {

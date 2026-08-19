@@ -265,9 +265,27 @@ if (wrap && canvas && couponGrid && reformBtn) {
   rimLight.position.set(-3, -2, 4);
   scene.add(rimLight);
 
-  const cakeTexture = new THREE.CanvasTexture(drawCakeFace());
+  const cakeCanvas = drawCakeFace();
+  const cakeTexture = new THREE.CanvasTexture(cakeCanvas);
   if ("colorSpace" in cakeTexture) {
     cakeTexture.colorSpace = THREE.SRGBColorSpace;
+  }
+
+  // The cylinder's two caps present the same texture 180-degrees rotated
+  // relative to each other (verified empirically), so sharing one texture
+  // as-is renders the back of the coin upside down and reversed.
+  // Pre-rotating a second copy of the artwork by 180 degrees cancels that
+  // out, so the back face also reads upright.
+  const backCanvas = document.createElement("canvas");
+  backCanvas.width = cakeCanvas.width;
+  backCanvas.height = cakeCanvas.height;
+  const backCtx = backCanvas.getContext("2d");
+  backCtx.translate(backCanvas.width, backCanvas.height);
+  backCtx.rotate(Math.PI);
+  backCtx.drawImage(cakeCanvas, 0, 0);
+  const cakeTextureBack = new THREE.CanvasTexture(backCanvas);
+  if ("colorSpace" in cakeTextureBack) {
+    cakeTextureBack.colorSpace = THREE.SRGBColorSpace;
   }
 
   const sideMat = new THREE.MeshStandardMaterial({
@@ -280,14 +298,27 @@ if (wrap && canvas && couponGrid && reformBtn) {
     metalness: 0.3,
     roughness: 0.45,
   });
+  const faceMatBack = new THREE.MeshStandardMaterial({
+    map: cakeTextureBack,
+    metalness: 0.3,
+    roughness: 0.45,
+  });
 
   const geometry = new THREE.CylinderGeometry(1.6, 1.6, 0.34, 72, 1, false);
-  // Bake a 90 degree rotation into the geometry so the cylinder's flat caps
-  // face the camera (+/-Z) by default. This lets us spin the coin around its
-  // own vertical (Y) axis afterwards for a real coin-flip tumble, instead of
-  // spinning it in-plane like a flat sticker.
+  // Bake two 90 degree rotations into the geometry so the cylinder's flat
+  // caps face the camera (+/-Z) by default, with the cap's UV "up" (V)
+  // lined up with local Y (world up) and UV "right" (U) lined up with
+  // local X. Three.js's cylinder cap UVs are actually wired to (z, x), not
+  // (x, z) -- a single rotateX only swaps the face to point at the camera
+  // but leaves the texture rotated 90 degrees (U along Y, V along X),
+  // which is exactly why the cake/text used to come out sideways. The
+  // second rotateZ corrects that swap so everything reads upright.
   geometry.rotateX(Math.PI / 2);
-  const coin = new THREE.Mesh(geometry, [sideMat, faceMat, faceMat]);
+  geometry.rotateZ(Math.PI / 2);
+  // Material group 1 is the cap that ends up facing +Z (front, upright as
+  // drawn); group 2 is the cap facing -Z (back), which needs the
+  // pre-flipped texture so it also reads upright once the coin turns.
+  const coin = new THREE.Mesh(geometry, [sideMat, faceMat, faceMatBack]);
   // No fixed tilt -- kept perfectly upright at rest. All motion comes from
   // rotation.y below, so the cake/text never lean off-axis.
   scene.add(coin);
@@ -315,6 +346,7 @@ if (wrap && canvas && couponGrid && reformBtn) {
   function setCoinTransparent(isTransparent) {
     sideMat.transparent = isTransparent;
     faceMat.transparent = isTransparent;
+    faceMatBack.transparent = isTransparent;
   }
 
   function tick(t) {
@@ -328,6 +360,7 @@ if (wrap && canvas && couponGrid && reformBtn) {
       coin.position.y = ease * 0.7;
       sideMat.opacity = 1 - ease;
       faceMat.opacity = 1 - ease;
+      faceMatBack.opacity = 1 - ease;
 
       if (p >= 1) {
         state = "opened";
@@ -347,6 +380,7 @@ if (wrap && canvas && couponGrid && reformBtn) {
       coin.position.y = (1 - ease) * 0.7;
       sideMat.opacity = ease;
       faceMat.opacity = ease;
+      faceMatBack.opacity = ease;
 
       if (p >= 1) {
         state = "idle";

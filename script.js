@@ -3,42 +3,51 @@ const BIRTHDAY_MONTH = 8; // August (1-indexed for readability)
 const BIRTHDAY_DAY = 19;
 const LOCK_DAYS = 365;
 
+const ICONS = {
+  dinner: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v6a2 2 0 0 0 4 0V2"/><path d="M8 2v20"/><path d="M16 2c-1.7 0-3 2-3 5s1.3 4 3 4v11"/></svg>`,
+  beach: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M12 1v2M12 13v2M5 8H3M21 8h-2M6.3 2.3 4.9 3.7M19.1 3.7 17.7 2.3"/><path d="M2 20c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0"/></svg>`,
+  controller: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="10" rx="5"/><path d="M7 11v4M5 13h4"/><circle cx="16" cy="11.5" r="1"/><circle cx="18.5" cy="14" r="1"/></svg>`,
+  tv: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M8 21h8M12 18v3"/></svg>`,
+  glove: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12V7a3 3 0 0 1 6 0v1a2 2 0 0 1 4 0v3a5 5 0 0 1-5 5H9a4 4 0 0 1-4-4v-1a2 2 0 0 1 2-2Z"/><path d="M9 12V9"/></svg>`,
+  ticket: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1a2 2 0 0 0 0 4v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1a2 2 0 0 0 0-4Z"/><path d="M9 6v12" stroke-dasharray="2 2"/></svg>`
+};
+
 const COUPONS = [
   {
     id: "free-dinner",
-    emoji: "🍽️",
+    icon: ICONS.dinner,
     title: "Free Dinner On Me",
     desc: "Redeem for a full meal on me. No complaining about the bill."
   },
   {
     id: "beach-day",
-    emoji: "🏄",
+    icon: ICONS.beach,
     title: "Beach Day Immunity",
     desc: "I'm coming to surf or hang at the beach with you. No flaking, no excuses."
   },
   {
     id: "couch-coop",
-    emoji: "🎮",
+    icon: ICONS.controller,
     title: "Couch Co-Op Pass",
     desc: "One full session of any game of your choice. I'm locked in, no complaints."
   },
   {
     id: "sports-bar",
-    emoji: "📺",
+    icon: ICONS.tv,
     title: "Sports Bar Summons",
     desc: "I have to watch a full game with you and actually pay attention."
   },
   {
     id: "ufc-buyin",
-    emoji: "🥊",
-    title: "UFC Fight Night Buy-In",
-    desc: "I chip in on the PPV or come watch it with you, no arguments."
+    icon: ICONS.glove,
+    title: "UFC Fight Night at My House",
+    desc: "I host the whole thing at my place — PPV's on me, food's on me, you just show up."
   },
   {
     id: "favor-dodge",
-    emoji: "🃏",
-    title: "Chore / Favor Dodge",
-    desc: "One no-questions-asked favor, or a task you'd have made me do — skipped."
+    icon: ICONS.ticket,
+    title: "No Questions Asked Favor",
+    desc: "One favor, no questions asked. Whatever it is, I'm doing it — no complaints, no explanation needed."
   }
 ];
 
@@ -130,10 +139,10 @@ function renderCoupons() {
     stamp.textContent = "REDEEMED";
     card.appendChild(stamp);
 
-    const emoji = document.createElement("div");
-    emoji.className = "coupon-emoji";
-    emoji.textContent = coupon.emoji;
-    card.appendChild(emoji);
+    const icon = document.createElement("div");
+    icon.className = "coupon-icon";
+    icon.innerHTML = coupon.icon;
+    card.appendChild(icon);
 
     const title = document.createElement("h3");
     title.className = "coupon-title";

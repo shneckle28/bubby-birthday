@@ -345,13 +345,17 @@ h2 {
 
 .special-card {
   position: relative;
-  width: 400px;
+  width: 460px;
   max-width: 92vw;
   height: 176px;
   margin: 0 auto;
   cursor: pointer;
   perspective: 1200px;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, height 0.45s ease;
+}
+
+.special-card.opened {
+  height: 560px;
 }
 
 .special-card:hover {
@@ -421,6 +425,80 @@ h2 {
   transform: rotateY(180deg);
   color: var(--text-dim);
   font-size: 0.98rem;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+  overflow-y: auto;
+}
+
+.special-card-message {
+  width: 100%;
+}
+
+.special-card-message p {
+  margin: 0 0 16px;
+  line-height: 1.6;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.special-card-signoff {
+  margin: 0 !important;
+}
+
+.signature-wrap {
+  position: relative;
+  display: inline-block;
+  margin-top: 6px;
+}
+
+.signature {
+  display: inline-block;
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+  font-size: 1.9rem;
+  color: var(--accent);
+  line-height: 1;
+  clip-path: inset(0 100% 0 0);
+}
+
+.signature-wrap::after {
+  content: "✏️";
+  position: absolute;
+  top: 40%;
+  left: 0;
+  transform: translate(-25%, -50%);
+  font-size: 1.1rem;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.special-card.opened .signature {
+  animation: signature-write 1.3s 0.75s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.special-card.opened .signature-wrap::after {
+  animation: pencil-move 1.3s 0.75s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@keyframes signature-write {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes pencil-move {
+  0% { left: 0%; opacity: 1; }
+  92% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
+@media (max-width: 480px) {
+  .special-card-message p {
+    font-size: 0.88rem;
+  }
+  .signature {
+    font-size: 1.6rem;
+  }
 }
 
 footer {

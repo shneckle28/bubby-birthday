@@ -19,6 +19,64 @@ if (wrap && canvas && couponGrid && reformBtn) {
     ctx.closePath();
   }
 
+  // Draws a shape three times (soft dark shadow offset down-right, soft
+  // light highlight offset up-left, then the base fill on top) to fake a
+  // metal-relief / embossed look so the emblem reads as carved into the
+  // coin rather than a flat sticker pasted on top of it.
+  function embossShape(ctx, drawPath, base, highlight, shadow, offset = 3) {
+    ctx.fillStyle = shadow;
+    ctx.save();
+    ctx.translate(offset, offset);
+    drawPath();
+    ctx.fill();
+    ctx.restore();
+
+    ctx.fillStyle = highlight;
+    ctx.save();
+    ctx.translate(-offset * 0.7, -offset * 0.7);
+    drawPath();
+    ctx.fill();
+    ctx.restore();
+
+    ctx.fillStyle = base;
+    drawPath();
+    ctx.fill();
+  }
+
+  // Draws text arced along a circle, centered on the top of the arc, so it
+  // reads upright like a coin's rim legend (e.g. "HAPPY BIRTHDAY BUBBY").
+  function drawArcText(ctx, text, cx, cy, radius, font, color) {
+    ctx.save();
+    ctx.font = font;
+    ctx.fillStyle = color;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    const chars = [...text];
+    const widths = chars.map((ch) => ctx.measureText(ch).width);
+    const totalAngle = widths.reduce((a, w) => a + w, 0) / radius;
+
+    let angle = -Math.PI / 2 - totalAngle / 2;
+
+    chars.forEach((ch, i) => {
+      const chAngle = widths[i] / radius;
+      angle += chAngle / 2;
+
+      const x = cx + radius * Math.cos(angle);
+      const y = cy + radius * Math.sin(angle);
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle + Math.PI / 2);
+      ctx.fillText(ch, 0, 0);
+      ctx.restore();
+
+      angle += chAngle / 2;
+    });
+
+    ctx.restore();
+  }
+
   function drawCakeFace() {
     const size = 512;
     const c = document.createElement("canvas");
@@ -43,55 +101,92 @@ if (wrap && canvas && couponGrid && reformBtn) {
     ctx.arc(size / 2, size / 2, size * 0.46, 0, Math.PI * 2);
     ctx.stroke();
 
+    // rim legend, arced along the top inner edge
+    drawArcText(
+      ctx,
+      "HAPPY BIRTHDAY BUBBY",
+      size / 2,
+      size / 2,
+      size * 0.4,
+      "700 22px Georgia, 'Times New Roman', serif",
+      "rgba(110, 68, 24, 0.6)"
+    );
+
+    // monochrome gold/bronze palette -- everything below reads as one
+    // embossed metal relief rather than a colorful illustration.
+    const BASE = "#8a5a24";
+    const BASE_LIGHT = "#a97a35";
+    const HIGHLIGHT = "#f4dd9c";
+    const SHADOW = "#5a3812";
+    const FROSTING_BASE = "#f0dba0";
+    const FROSTING_HI = "#fff3d2";
+    const FROSTING_SHADOW = "#c9a24f";
+
     ctx.save();
     ctx.translate(size / 2, size / 2 + 50);
 
-    // plate shadow
+    // plate shadow (soft, sits under everything)
     ctx.fillStyle = "rgba(60, 40, 0, 0.28)";
     ctx.beginPath();
     ctx.ellipse(0, 100, 130, 20, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // bottom tier
-    ctx.fillStyle = "#7a4a23";
-    roundRect(ctx, -125, 15, 250, 80, 14);
-    ctx.fill();
+    embossShape(
+      ctx,
+      () => roundRect(ctx, -125, 15, 250, 80, 14),
+      BASE,
+      HIGHLIGHT,
+      SHADOW
+    );
 
-    // bottom tier frosting drip
-    ctx.fillStyle = "#fff8ea";
-    roundRect(ctx, -125, -2, 250, 32, 16);
-    ctx.fill();
+    // bottom tier frosting band
+    embossShape(
+      ctx,
+      () => roundRect(ctx, -125, -2, 250, 32, 16),
+      FROSTING_BASE,
+      FROSTING_HI,
+      FROSTING_SHADOW,
+      2
+    );
 
     // top tier
-    ctx.fillStyle = "#8a5a2b";
-    roundRect(ctx, -80, -58, 160, 62, 12);
-    ctx.fill();
+    embossShape(
+      ctx,
+      () => roundRect(ctx, -80, -58, 160, 62, 12),
+      BASE_LIGHT,
+      HIGHLIGHT,
+      SHADOW
+    );
 
-    // top tier frosting
-    ctx.fillStyle = "#fff8ea";
-    roundRect(ctx, -80, -72, 160, 26, 12);
-    ctx.fill();
+    // top tier frosting band
+    embossShape(
+      ctx,
+      () => roundRect(ctx, -80, -72, 160, 26, 12),
+      FROSTING_BASE,
+      FROSTING_HI,
+      FROSTING_SHADOW,
+      2
+    );
 
-    // sprinkles
-    const sprinkleColors = ["#ff5da8", "#5dd6a8", "#5dc6ff", "#ffb703"];
-    for (let i = 0; i < 22; i += 1) {
-      const sx = -110 + Math.random() * 220;
-      const sy = -60 + Math.random() * 30;
-      ctx.fillStyle = sprinkleColors[i % sprinkleColors.length];
-      ctx.save();
-      ctx.translate(sx, sy);
-      ctx.rotate(Math.random() * Math.PI);
-      ctx.fillRect(-6, -1.5, 12, 3);
-      ctx.restore();
-    }
-
-    // candles + flames
-    const candleColors = ["#ff5da8", "#5dd6a8", "#5dc6ff"];
+    // candles + flames -- kept in the same warm gold family so they read
+    // as part of the emblem instead of a colorful sticker.
     for (let i = -1; i <= 1; i += 1) {
       const cx = i * 48;
-      ctx.fillStyle = candleColors[i + 1];
-      ctx.fillRect(cx - 7, -118, 14, 48);
-      ctx.strokeStyle = "rgba(255,255,255,0.6)";
+
+      embossShape(
+        ctx,
+        () => {
+          ctx.beginPath();
+          ctx.rect(cx - 7, -118, 14, 48);
+        },
+        BASE_LIGHT,
+        HIGHLIGHT,
+        SHADOW,
+        2
+      );
+
+      ctx.strokeStyle = "rgba(255, 243, 210, 0.6)";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(cx - 7, -104);
@@ -150,8 +245,15 @@ if (wrap && canvas && couponGrid && reformBtn) {
   });
 
   const geometry = new THREE.CylinderGeometry(1.6, 1.6, 0.34, 72, 1, false);
+  // Bake a 90 degree rotation into the geometry so the cylinder's flat caps
+  // face the camera (+/-Z) by default. This lets us spin the coin around its
+  // own vertical (Y) axis afterwards for a real coin-flip tumble, instead of
+  // spinning it in-plane like a flat sticker.
+  geometry.rotateX(Math.PI / 2);
   const coin = new THREE.Mesh(geometry, [sideMat, faceMat, faceMat]);
-  coin.rotation.x = Math.PI / 2.4;
+  // Small fixed tilt purely for a nicer camera angle -- does not affect the
+  // tumbling motion, which comes entirely from rotation.y below.
+  coin.rotation.x = 0.14;
   scene.add(coin);
 
   // ---------- SIZING ----------

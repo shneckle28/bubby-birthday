@@ -199,7 +199,7 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-const CONFETTI_COLORS = ["#ffd76a", "#d4a017", "#f5c542", "#b8860b", "#fff4d6", "#8a6712"];
+const CONFETTI_COLORS = ["#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93", "#ff924c"];
 
 function fireConfetti(count = 160) {
   const newParticles = Array.from({ length: count }, () => ({

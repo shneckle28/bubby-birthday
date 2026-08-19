@@ -4,11 +4,10 @@ const BIRTHDAY_DAY = 19;
 const LOCK_DAYS = 365;
 
 const ICONS = {
-  dinner: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v6a2 2 0 0 0 4 0V2"/><path d="M8 2v20"/><path d="M16 2c-1.7 0-3 2-3 5s1.3 4 3 4v11"/></svg>`,
-  beach: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M12 1v2M12 13v2M5 8H3M21 8h-2M6.3 2.3 4.9 3.7M19.1 3.7 17.7 2.3"/><path d="M2 20c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0 3 1.5 4.5 0"/></svg>`,
+  dinner: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2v6M8 2v6M11 2v6M8 8v14"/><path d="M15 2h4v9a2 2 0 0 1-4 0V2Z"/><path d="M17 13v9"/></svg>`,
+  beach: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 16 0Z"/><path d="M12 12v8a2 2 0 0 1-4 0"/></svg>`,
   controller: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="10" rx="5"/><path d="M7 11v4M5 13h4"/><circle cx="16" cy="11.5" r="1"/><circle cx="18.5" cy="14" r="1"/></svg>`,
-  tv: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M8 21h8M12 18v3"/></svg>`,
-  glove: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12V7a3 3 0 0 1 6 0v1a2 2 0 0 1 4 0v3a5 5 0 0 1-5 5H9a4 4 0 0 1-4-4v-1a2 2 0 0 1 2-2Z"/><path d="M9 12V9"/></svg>`,
+  pulse: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
   ticket: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1a2 2 0 0 0 0 4v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1a2 2 0 0 0 0-4Z"/><path d="M9 6v12" stroke-dasharray="2 2"/></svg>`
 };
 
@@ -32,16 +31,10 @@ const COUPONS = [
     desc: "One full session of any game of your choice. I'm locked in, no complaints."
   },
   {
-    id: "sports-bar",
-    icon: ICONS.tv,
-    title: "Sports Bar Summons",
-    desc: "I have to watch a full game with you and actually pay attention."
-  },
-  {
     id: "ufc-buyin",
-    icon: ICONS.glove,
+    icon: ICONS.pulse,
     title: "UFC Fight Night at My House",
-    desc: "I host the whole thing at my place — PPV's on me, food's on me, you just show up."
+    desc: "I host the whole thing at my place — we'll watch it together, food's on me, you just show up."
   },
   {
     id: "favor-dodge",
@@ -174,6 +167,25 @@ function renderCoupons() {
   });
 }
 
+// ---------- SPECIAL CARD ----------
+function initSpecialCard() {
+  const card = document.getElementById("special-card");
+  if (!card) return;
+
+  const toggle = () => {
+    const opened = card.classList.toggle("opened");
+    card.setAttribute("aria-expanded", opened ? "true" : "false");
+  };
+
+  card.addEventListener("click", toggle);
+  card.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggle();
+    }
+  });
+}
+
 // ---------- CONFETTI ----------
 const canvas = document.getElementById("confetti-canvas");
 const ctx = canvas.getContext("2d");
@@ -253,6 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCountdown();
   setInterval(renderCountdown, 1000);
   renderCoupons();
+  initSpecialCard();
 
   // Fires every time he visits the page, as requested.
   fireConfetti(220);

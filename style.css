@@ -142,6 +142,10 @@ h2 {
   margin-bottom: 8px;
 }
 
+.coupons-section {
+  margin-top: 64px;
+}
+
 .coupons-intro {
   text-align: center;
   color: var(--text-dim);
@@ -266,18 +270,91 @@ h2 {
 }
 
 .special-section {
-  margin-top: 64px;
   text-align: center;
 }
 
-.special-message {
+.special-card {
+  position: relative;
+  width: 260px;
+  height: 170px;
+  margin: 24px auto 0;
+  cursor: pointer;
+  perspective: 1200px;
+  transition: transform 0.2s ease;
+}
+
+.special-card:hover {
+  transform: translateY(-3px);
+}
+
+.special-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: 18px;
+}
+
+.special-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.special-card.opened .special-card-inner {
+  transform: rotateY(180deg);
+}
+
+.special-card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+}
+
+.special-card-front {
+  background: linear-gradient(135deg, var(--card), var(--bg-2));
+  border: 1px solid var(--card-border);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+}
+
+.special-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #1a1200;
+}
+
+.special-card-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.special-card-label {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+}
+
+.special-card-back {
   background: var(--card);
   border: 1px dashed var(--card-border);
-  border-radius: 16px;
-  padding: 28px;
-  max-width: 560px;
-  margin: 0 auto;
+  transform: rotateY(180deg);
   color: var(--text-dim);
+  font-size: 0.98rem;
 }
 
 footer {
